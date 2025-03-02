@@ -1,0 +1,7 @@
+*.pth
+!current.pth
+*.ipynb
+*.txt
+.ipynb_checkpoints/
+build/
+__pycache__/
