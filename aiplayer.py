@@ -4,7 +4,7 @@ from dqn import DQN
 
 class AIPlayer(Player):
 
-    def __init__(self, model_file='ddqn_16_99_20000_23558_32_64_128_128.pth', device='cuda'):
+    def __init__(self, model_file='current.pth', device='cuda'):
         super().__init__()
         self.gives_command = True
         self.model = DQN(16, 2).to(device)
