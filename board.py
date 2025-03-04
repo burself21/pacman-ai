@@ -2,6 +2,7 @@ from ghost import Ghost
 from board_search_agent import BoardSearchAgent
 from copy import deepcopy, copy
 import numpy as np
+import random
 
 class Board:
 
@@ -62,10 +63,25 @@ class Board:
     GATE_TOP_L = (14, 12)
     GATE_TOP_R = (15, 12)
 
-    STARTING_POS = (21, 16)
+    STARTING_POSITIONS = (
+        (2, 2),
+        (2, 7),
+        (21, 16),
+        (30, 7),
+        (15, 28),
+        (30, 2),
+        (21, 22),
+        (17, 7),
+        (13, 7),
+        (15, 10),
+        (27, 2),
+        (6, 21),
+        (9, 7),
+        (6, 7)
+    )
 
     def __init__(self, width, height, ghost_speeds):
-        self.pac_x, self.pac_y = Board.STARTING_POS
+        self.pac_y, self.pac_x = random.choice(Board.STARTING_POSITIONS)
         self.board_values = np.array(Board.board_values)
         self.powerup_active = False
         self.powerup_counter = 0
@@ -203,7 +219,7 @@ class Board:
             ghost.move(self.BOARD_WIDTH, self.BOARD_HEIGHT)
             
     def reset(self):
-        self.pac_x, self.pac_y = Board.STARTING_POS
+        self.pac_y, self.pac_x = random.choice(Board.STARTING_POSITIONS)
         self.board_values = np.array(Board.board_values)
         self.powerup_active = False
         self.powerup_counter = 0
