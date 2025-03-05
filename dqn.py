@@ -62,7 +62,7 @@ class DQN(nn.Module):
         q_values = self.dense(combined)  # Shape: (batch_size, output_actions)
         return q_values
 
-    def act_batch(self, grids, scalars, possible_actions):
+    def act_batch(self, grids, scalars, possible_actions, device):
         q_values = self(grids, scalars)
         # Create a tensor of -inf values with the same shape as q_values
         #q_values_masked = torch.full_like(q_values, -float('inf'))  # q_values_masked shape: (batch_size, num_actions)
@@ -84,7 +84,7 @@ class DQN(nn.Module):
     
         return best_actions
         
-    def act(self, state, possible_actions, device='cuda'):
+    def act(self, state, possible_actions, device):
         grid_features, scalar_features = state
         grids_t = torch.as_tensor(grid_features, dtype=torch.float32).to(device)
         scalars_t = torch.as_tensor(scalar_features, dtype=torch.float32).to(device)
@@ -100,7 +100,7 @@ class DQN(nn.Module):
         max_q = torch.argmax(q_values_possible, dim=1)[0]
         return possible_actions[max_q.item()]
         
-    def get_q_values(self, state, device='cuda'):
+    def get_q_values(self, state, device):
         grid_features, scalar_features = state
         grids_t = torch.as_tensor(grid_features, dtype=torch.float32).to(device)
         scalars_t = torch.as_tensor(scalar_features, dtype=torch.float32).to(device)
