@@ -25,8 +25,8 @@ class DQNTrainer():
         else:
             pacman_position = None
         self.env = QLearningEnvironment(random_ghosts=random_ghosts, player_position=pacman_position)
-        self.online_net = DQN(16, 2).to(self.device)
-        self.target_net = DQN(16, 2).to(self.device)
+        self.online_net = DQN(*QLearningEnvironment.FEATURE_DIMS).to(self.device)
+        self.target_net = DQN(*QLearningEnvironment.FEATURE_DIMS).to(self.device)
         if model:
             self.online_net.load_state_dict(torch.load())
 

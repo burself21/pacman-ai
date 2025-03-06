@@ -1,7 +1,7 @@
 import numpy as np
 from board_search_agent import BoardSearchAgent
 from ghost_agent import GhostAgent
-from collections import defaultdict
+from collections import defaultdict, deque
 from copy import copy, deepcopy
 
 # need: initialize, get_possible_actions, take action (get next state, reward, and game over or not)
@@ -126,6 +126,9 @@ class QLearningEnvironment:
         [7, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 8]
     )
 
+    HEIGHT = len(DEFAULT_BOARD)
+    WIDTH = len(DEFAULT_BOARD[0])
+
     VALID_STARTING_POSITIONS = (
         (14, 22),
         (15, 0),
@@ -174,9 +177,9 @@ class QLearningEnvironment:
         (30,17),
         (30,22),
         (30,27)
-
-
     )
+
+    FEATURE_DIMS = (16, 3)   # (#grid_features, #scalar_features)
 
     def __init__(self, board=None, player_position=None, random_ghosts=True):
         if board is None:
@@ -232,6 +235,10 @@ class QLearningEnvironment:
 
         self.possible_actions = {}
         self.compute_action_space()
+
+        self.max_ghost_distance = 4
+        self.ghost_distance = 0
+        self.calculate_min_distance_to_ghost(max_distance=self.max_ghost_distance)
 
     def compute_action_space(self):
         for y in range(self.board.shape[0]):
@@ -289,6 +296,9 @@ class QLearningEnvironment:
         if self.last_objective >= 3:
             reward -= 0.1 * self.last_objective # trying to discourage passivity
         reward -= 0.5
+        self.calculate_min_distance_to_ghost(max_distance=self.max_ghost_distance)
+        distance_penalty = min(0, -70 + 20 * self.ghost_distance)      # 4 -> 0, 3 -> -10, 2 -> -30, 1 -> -50
+        reward += distance_penalty
         return (self.get_state(), reward, self.game_over)
          #(self.state.flatten(), reward, self.game_over)
 
@@ -419,6 +429,7 @@ class QLearningEnvironment:
             GhostAgent(2, self.bsa, self.random_ghosts, self.player_position),
             GhostAgent(3, self.bsa, self.random_ghosts, self.player_position),
         )
+        self.calculate_min_distance_to_ghost(max_distance=self.max_ghost_distance)
         return self.get_state() #self.state.flatten()
 
     def get_state(self):
@@ -437,11 +448,49 @@ class QLearningEnvironment:
             else:
                 grid_features[4 + 3*i, ghost.coords[1], ghost.coords[0]] = 1
             
-        scalar_features = (self.powerup_counter / 15, self.num_pellets / self.max_pellets)
+        scalar_features = (self.powerup_counter / 15, self.num_pellets / self.max_pellets, self.ghost_distance / self.max_ghost_distance)
         return (grid_features, scalar_features)
+
+    def calculate_min_distance_to_ghost(self, max_distance=4):
+        """
+        Computes the minimum distance from Pac-Man to the nearest ghost using BFS.
+        If no ghost is found within max_distance, returns max_distance.
+        """
+
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]  # Up, Down, Left, Right
+        queue = deque([(self.player_position[0], self.player_position[1], 0)])  # (x, y, distance)
+        visited = set()
+        visited.add(tuple(self.player_position))
+
+        rows, cols = QLearningEnvironment.HEIGHT, QLearningEnvironment.WIDTH
+
+        while queue:
+            y, x, dist = queue.popleft()
+            
+            # Stop if we reach max_distance + 1
+            if dist == max_distance:
+                self.ghost_distance = max_distance
+                return
+            
+            # Check if a ghost is at this position
+            for ghost in self.ghosts:
+                if [x, y] == ghost.coords:
+                    self.ghost_distance = dist
+                    return # Found the closest ghost
+            
+            # Explore neighbors
+            for dx, dy in directions:
+                nx, ny = x + dx, y + dy
+                if 0 <= ny < rows and 0 <= nx < cols and self.board[ny][nx] < 3 and (ny, nx) not in visited:
+                    visited.add((ny, nx))
+                    queue.append((ny, nx, dist + 1))
+        
+        # If no ghost is found within max_distance, return max_distance
+        self.ghost_distance = max_distance
     
     def get_starting_position(self):
         return QLearningEnvironment.VALID_STARTING_POSITIONS[np.random.randint(0, len(QLearningEnvironment.VALID_STARTING_POSITIONS))]
+
 
 
 

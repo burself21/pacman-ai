@@ -56,7 +56,7 @@ class Board:
     )
 
     BOARD_WIDTH = 30
-    BOARD_HEIGHT = 32
+    BOARD_HEIGHT = 33
 
     GHOST_BOX_UL = (11, 13)
     GHOST_BOX_LR = (18, 17)

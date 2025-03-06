@@ -40,8 +40,8 @@ tile_width = board.tile_width
 restart_rect = pygame.Rect(WIDTH // 2 - 90, HEIGHT // 2 + 10, 180, 60)
 
 game_state = GameState(NUM_PLAYER_IMAGES)
-#player = DefaultPlayer()
-player = AIPlayer()
+player = DefaultPlayer()
+#player = AIPlayer()
 
 
 def move_player(board):

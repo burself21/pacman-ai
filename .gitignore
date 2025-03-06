@@ -1,5 +1,4 @@
 *.pth
-!current.pth
 *.ipynb
 *.txt
 .ipynb_checkpoints/
